@@ -10,6 +10,13 @@ import requests
 from bs4 import BeautifulSoup
 import traceback
 import re
+import pymysql
+
+mysqlHost='127.0.0.1'
+mysqlPort=3306
+mysqlUser='root'
+mysqlPassWord='abc@123'
+database='stock_data'
  
 #获取网页内容
 def getHTMLText(url, code="utf-8"):
@@ -20,7 +27,19 @@ def getHTMLText(url, code="utf-8"):
         return r.text
     except:
         return ""
- 
+        
+
+def saveStockList2Mysql(lst):
+    conn = pymysql.connect(host=mysqlHost, port=mysqlPort, user=mysqlUser, passwd=mysqlPassWord, db=database, charset='utf8') 
+    cursor = conn.cursor()
+    insertSql = ('insert into stock(stock_no, stock_name) values(%s, %s)')
+    
+    for stock in lst:
+        cursor.execute(insertSql, (stock[0], stock[1]))
+    
+    conn.commit()
+    cursor.close()
+    conn.close()
  
 #获取所有的股票名称，将其放在一个列表中
 def getStockList(lst, stockURL):
@@ -39,6 +58,7 @@ def getStockList(lst, stockURL):
         lst.append(stockInfo)
     
     print(len(lst))
+    saveStockList2Mysql(lst)
  
  
 def getStockInfo(lst, stockURL, fpath):
