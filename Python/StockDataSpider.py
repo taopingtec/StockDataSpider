@@ -35,7 +35,10 @@ def saveStockList2Mysql(lst):
     insertSql = ('insert into stock(stock_no, stock_name) values(%s, %s)')
     
     for stock in lst:
-        cursor.execute(insertSql, (stock[0], stock[1]))
+        try:
+            cursor.execute(insertSql, (stock[0], stock[1]))
+        except:
+            continue
     
     conn.commit()
     cursor.close()
@@ -64,7 +67,7 @@ def getStockList(lst, stockURL):
 def getStockInfo(lst, stockURL, fpath):
     count = 0
     for stock in lst:
-        url = stockURL + stock + ".html"#对应的每只股票的网址
+        url = stockURL + stock[0] + ".html"#对应的每只股票的网址
         print(url)
         #break
         html = getHTMLText(url)
@@ -103,6 +106,7 @@ def getStockInfo(lst, stockURL, fpath):
             count = count + 1
             print("\r当前进度: {:.2f}%".format(count * 100 / len(lst)), end="")
             print('')
+            break
                 
         except BaseException as e:
             print(e)
@@ -124,7 +128,7 @@ def main():
     
     getStockList(slist, stock_list_url_sz)
     #print(slist)
-    #getStockInfo(slist, stock_info_url_sz, output_file)
+    getStockInfo(slist, stock_info_url_sz, output_file)
         
     print('========================================================')
     #slist = []
