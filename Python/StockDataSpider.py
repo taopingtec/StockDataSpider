@@ -69,7 +69,7 @@ def getStockInfo(lst, stockURL, fpath):
     for stock in lst:
         url = stockURL + stock[0] + ".html"#对应的每只股票的网址
         print(url)
-        #break
+        break
         html = getHTMLText(url)
         #print(html)
         try:
