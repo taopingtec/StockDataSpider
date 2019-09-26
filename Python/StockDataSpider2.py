@@ -29,7 +29,21 @@ def saveStockList2Mysql(lst):
     cursor.close()
     conn.close()
     
+def createTableIfNeeded(code):    
+    conn = pymysql.connect(host=mysqlHost, port=mysqlPort, user=mysqlUser, passwd=mysqlPassWord, db=database, charset='utf8')
+    cursor = conn.cursor()
+    createTableSql = "CREATE TABLE stock_date_%s LIKE stock_date;" % (code[-3:])
+    print(createTableSql)
+    try:
+        cursor.execute(createTableSql)
+    except BaseException as e:
+        print(e)
+    conn.commit()
+    cursor.close()
+    conn.close()
+        
 def save2DB(filePath, code):
+    createTableIfNeeded(code)
     conn = pymysql.connect(host=mysqlHost, port=mysqlPort, user=mysqlUser, passwd=mysqlPassWord, db=database, charset='utf8') 
     cursor = conn.cursor()
     data = pd.read_csv(filepath+code+'.csv', 'gbk')
@@ -42,9 +56,9 @@ def save2DB(filePath, code):
             #sqlSentence4 = "insert into stock_date(trade_date, stock_no, stock_name, JinShou, ZuiGao, ZuiDi, JinKai,\
             #                   ZuoShou, ShangZhang, ZhangFu, HuanSouLv, ChengJiaoLiang, ChengJiaoE, ZongShiZhi, LiuTongShiZhi)  \
             #                   values ('%s',%s','%s',%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)" % record
-            sqlSentence4 = "insert into stock_date(trade_date, stock_no, stock_name, JinShou, ZuiGao, ZuiDi, JinKai,\
+            sqlSentence4 = "insert into stock_date_%s(trade_date, stock_no, stock_name, JinShou, ZuiGao, ZuiDi, JinKai,\
                                ZuoShou, ShangZhang, ZhangFu, HuanSouLv, ChengJiaoLiang, ChengJiaoE, ZongShiZhi, LiuTongShiZhi)  \
-                               values ('%s','%s','%s',%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (info_data[0], code, info_data[2], info_data[3], info_data[4], info_data[5], info_data[6], info_data[7], info_data[8], info_data[9], info_data[10], info_data[11], info_data[12], int(float(info_data[13])/10000), int(float(info_data[14])/10000))
+                               values ('%s','%s','%s',%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (code[-3:], info_data[0], code, info_data[2], info_data[3], info_data[4], info_data[5], info_data[6], info_data[7], info_data[8], info_data[9], info_data[10], info_data[11], info_data[12], int(float(info_data[13])/10000), int(float(info_data[14])/10000))
             #print(sqlSentence4)
             #获取的表中数据很乱，包含缺失值、Nnone、none等，插入数据库需要处理成空值
             sqlSentence4 = sqlSentence4.replace('nan','null').replace('None','null').replace('none','null') 
@@ -139,6 +153,6 @@ for item in slist:
     url = 'http://quotes.money.163.com/service/chddata.html?code='+preCode+code+\
         '&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP'
     #print(url)
-    urllib.request.urlretrieve(url, filepath+code+'.csv')   
+    #urllib.request.urlretrieve(url, filepath+code+'.csv')   
     save2DB(filepath, code)    
     #break
