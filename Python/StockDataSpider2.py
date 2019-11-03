@@ -7,6 +7,7 @@ import re
 import pandas as pd
 import pymysql
 import os
+import datetime
 
 mysqlHost='127.0.0.1'
 mysqlPort=3306
@@ -33,7 +34,7 @@ def createTableIfNeeded(code):
     conn = pymysql.connect(host=mysqlHost, port=mysqlPort, user=mysqlUser, passwd=mysqlPassWord, db=database, charset='utf8')
     cursor = conn.cursor()
     createTableSql = "CREATE TABLE stock_date_%s LIKE stock_date;" % (code[-2:])
-    print(createTableSql)
+    #print(createTableSql)
     try:
         cursor.execute(createTableSql)
     except BaseException as e:
@@ -49,6 +50,7 @@ def save2DB(filePath, code):
     data = pd.read_csv(filepath+code+'.csv', 'gbk')
     #print(data.columns)
     length = len(data)
+    last_data_date = '1654-05-04'
     for i in range(2, length):
         record = tuple(data.loc[i])
         info_data = record[0].split(',')
@@ -60,13 +62,27 @@ def save2DB(filePath, code):
                                ZuoShou, ShangZhang, ZhangFu, HuanSouLv, ChengJiaoLiang, ChengJiaoE, ZongShiZhi, LiuTongShiZhi)  \
                                values ('%s','%s','%s',%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (code[-2:], info_data[0], code, info_data[2], info_data[3], info_data[4], info_data[5], info_data[6], info_data[7], info_data[8], info_data[9], info_data[10], info_data[11], info_data[12], int(float(info_data[13])/10000), int(float(info_data[14])/10000))
             #print(sqlSentence4)
+            #print(info_data[0])
+            if last_data_date < info_data[0]:
+                last_data_date = info_data[0]
             #获取的表中数据很乱，包含缺失值、Nnone、none等，插入数据库需要处理成空值
             sqlSentence4 = sqlSentence4.replace('nan','null').replace('None','null').replace('none','null') 
-            cursor.execute(sqlSentence4)
+            cursor.execute(sqlSentence4)           
         except BaseException as e:#如果以上插入过程出错，跳过这条数据记录，继续往下进行
             #print(info_data)
             #print(e)        
             continue
+             
+    try:
+        sqlSentence = "UPDATE stock SET last_data_date='%s' WHERE stock_no=%s;" % (last_data_date, code)
+        #print(sqlSentence4)
+        #获取的表中数据很乱，包含缺失值、Nnone、none等，插入数据库需要处理成空值
+        sqlSentence = sqlSentence.replace('nan','null').replace('None','null').replace('none','null') 
+        cursor.execute(sqlSentence)
+    except BaseException as e:
+        print(e)        
+             
+            
     conn.commit()
     cursor.close()
     conn.close()            
@@ -112,8 +128,48 @@ def getStockList(lst, stockURL):
         stockInfo = [stockSplit[1].split(')')[0], stockSplit[0]]
         lst.append(stockInfo)
     
-    print(len(lst))
-    saveStockList2Mysql(lst)    
+    #print(len(lst))
+    saveStockList2Mysql(lst)
+    
+def getLastDataDate(code):
+    lastDataDate = '16540504'
+    conn = pymysql.connect(host=mysqlHost, port=mysqlPort, user=mysqlUser, passwd=mysqlPassWord, db=database, charset='utf8') 
+    cursor = conn.cursor()
+    try:
+        sqlSentence = "SELECT last_data_date FROM stock WHERE stock_no=%s;" % (code)
+        #获取的表中数据很乱，包含缺失值、Nnone、none等，插入数据库需要处理成空值
+        sqlSentence = sqlSentence.replace('nan','null').replace('None','null').replace('none','null') 
+        cursor.execute(sqlSentence)
+        res = cursor.fetchall()
+        for row in res:
+            for r in row:
+                if r is not None:
+                    lastDataDate = datetime.datetime.strftime(r, '%Y%m%d')
+                    break
+    except BaseException as e:
+        print(e)        
+    conn.commit()
+    cursor.close()
+    conn.close()  
+    return lastDataDate    
+    
+def getStockDataAndSave(slist):
+    index = 0
+    for item in slist:
+        code = item[0]
+        index = index + 1
+        startDate = getLastDataDate(code)        
+        print("Processing " + str(index) + " of " + str(len(slist)) + " :" + str(item))
+        preCode = '1'
+        if code[0]=='6':
+            preCode = '0'
+        url = 'http://quotes.money.163.com/service/chddata.html?code='+preCode+code+\
+        '&start=' + startDate +\
+        '&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP'
+        print(url)
+        #urllib.request.urlretrieve(url, filepath+code+'.csv')   
+        save2DB(filepath, code)    
+        #break
     
 #Url = 'http://quote.eastmoney.com/stocklist.html'#东方财富网股票数据连接地址
 filepath = '.\\data\\'#定义数据文件保存路径
@@ -126,10 +182,11 @@ stock_info_url_sh = 'https://gupiao.baidu.com/stock/sh'
 stock_list_url_cyb = 'https://www.banban.cn/gupiao/list_cyb.html'
 stock_info_url_cyb = 'https://gupiao.baidu.com/stock/sz'
     
-slist = []
+slist = [['000004', '国农科技']]
     
-getStockList(slist, stock_list_url_sz)
+#getStockList(slist, stock_list_url_sz)
 #print(slist)
+getStockDataAndSave(slist)
         
 print('========================================================')
 #slist = []
@@ -142,17 +199,3 @@ print('========================================================')
 #print(code)
 #获取所有股票代码（以6开头的，应该是沪市数据）集合
 #CodeList = ['600505']
-index = 0
-for item in slist:
-    code = item[0]
-    index = index + 1
-    print("Processing " + str(index) + " of " + str(len(slist)) + " :" + str(item))
-    preCode = '1'
-    if code[0]=='6':
-        preCode = '0'
-    url = 'http://quotes.money.163.com/service/chddata.html?code='+preCode+code+\
-        '&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP'
-    #print(url)
-    #urllib.request.urlretrieve(url, filepath+code+'.csv')   
-    save2DB(filepath, code)    
-    #break
