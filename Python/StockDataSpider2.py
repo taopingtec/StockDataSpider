@@ -166,8 +166,8 @@ def getStockDataAndSave(slist):
         url = 'http://quotes.money.163.com/service/chddata.html?code='+preCode+code+\
         '&start=' + startDate +\
         '&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP'
-        print(url)
-        #urllib.request.urlretrieve(url, filepath+code+'.csv')   
+        #print(url)
+        urllib.request.urlretrieve(url, filepath+code+'.csv')   
         save2DB(filepath, code)    
         #break
     
@@ -182,19 +182,22 @@ stock_info_url_sh = 'https://gupiao.baidu.com/stock/sh'
 stock_list_url_cyb = 'https://www.banban.cn/gupiao/list_cyb.html'
 stock_info_url_cyb = 'https://gupiao.baidu.com/stock/sz'
     
-slist = [['000004', '国农科技']]
+#slist = [['000004', '国农科技']]
+slist = []
     
-#getStockList(slist, stock_list_url_sz)
+getStockList(slist, stock_list_url_sz)
 #print(slist)
 getStockDataAndSave(slist)
         
 print('========================================================')
-#slist = []
-#getStockList(slist, stock_list_url_sh)
+slist = []
+getStockList(slist, stock_list_url_sh)
+getStockDataAndSave(slist)
    
 print('========================================================')
-#slist = []
-#getStockList(slist, stock_list_url_cyb)
+slist = []
+getStockList(slist, stock_list_url_cyb)
+getStockDataAndSave(slist)
 
 #print(code)
 #获取所有股票代码（以6开头的，应该是沪市数据）集合
