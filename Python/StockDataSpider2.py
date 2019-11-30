@@ -51,7 +51,7 @@ def save2DB(filePath, code):
     #print(data.columns)
     length = len(data)
     last_data_date = '1654-05-04'
-    for i in range(2, length):
+    for i in range(0, length):
         record = tuple(data.loc[i])
         info_data = record[0].split(',')
         try:
