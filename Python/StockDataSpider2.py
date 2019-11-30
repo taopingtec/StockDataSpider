@@ -167,9 +167,11 @@ def getStockDataAndSave(slist):
         '&start=' + startDate +\
         '&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP'
         #print(url)
-        urllib.request.urlretrieve(url, filepath+code+'.csv')   
-        save2DB(filepath, code)    
-        #break
+        try:
+            urllib.request.urlretrieve(url, filepath+code+'.csv')   
+            save2DB(filepath, code)    
+        except BaseException as e:
+            print(e)        
     
 #Url = 'http://quote.eastmoney.com/stocklist.html'#东方财富网股票数据连接地址
 filepath = '.\\data\\'#定义数据文件保存路径
@@ -182,7 +184,7 @@ stock_info_url_sh = 'https://gupiao.baidu.com/stock/sh'
 stock_list_url_cyb = 'https://www.banban.cn/gupiao/list_cyb.html'
 stock_info_url_cyb = 'https://gupiao.baidu.com/stock/sz'
     
-#slist = [['000004', '国农科技']]
+#slist = [['000021', '深科技'],['000023', '深天地A']]
 slist = []
     
 getStockList(slist, stock_list_url_sz)
