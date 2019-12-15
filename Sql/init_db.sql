@@ -18,16 +18,23 @@ CREATE TABLE `stock`  (
   `id` bigint(40) NOT NULL AUTO_INCREMENT,
   `stock_no` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `stock_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `pe_static` float(10, 2) DEFAULT NULL,
-  `pe_dynamic` float(10, 2) DEFAULT NULL,
-  `pe_rolling` float(10, 2) DEFAULT NULL,
-  `pb` float(10, 2) DEFAULT NULL,
+  `pe_static` float(10, 2) DEFAULT NULL COMMENT '静态市盈率',
+  `pe_dynamic` float(10, 2) DEFAULT NULL COMMENT '动态市盈率',
+  `pe_rolling` float(10, 2) DEFAULT NULL COMMENT '滚动市盈率',
+  `pb` float(10, 2) DEFAULT NULL COMMENT '市净率',
+  `price` float(10, 2) DEFAULT NULL COMMENT '最新股价',
+  `turnover_rate` float(6, 2) DEFAULT NULL COMMENT '换手率',
+  `total_value` bigint(255) DEFAULT NULL COMMENT '总市值',
+  `circul_value` bigint(255) DEFAULT NULL COMMENT '流通市值',
+  `prof` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '行业',
+  `province` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '所属省份',
+  `concept` text CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '概念',
   `create_time` timestamp(0) DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp(0) DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP(0),
   `last_data_date` date DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `stock_no`(`stock_no`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 117805 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 117806 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;
 

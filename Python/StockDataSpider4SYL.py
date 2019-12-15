@@ -20,14 +20,16 @@ def save2DB(stockDatas):
         record = stockDatas[i]
         try:
             sqlSentence = "update stock set pe_static=" + str(record['f114']) + ", pe_dynamic=" + str(record['f9']) + ", pe_rolling=" + str(record['f115']) \
-                          + ", pb=" + str(record['f23']) + " where stock_no=" + record['f12'] + ";"
+                          + ", pb=" + str(record['f23']) + ", price=" + str(record['f2']) + ", turnover_rate=" + str(record['f8']) + ", total_value=" + str(record['f20']) \
+                          + ", circul_value=" + str(record['f21']) + ", prof='" + str(record['f100']) + "', province='" + str(record['f102']) \
+                          + "', concept='" + str(record['f103']) + "' where stock_no=" + record['f12'] + ";"
 
             #获取的表中数据很乱，包含缺失值、Nnone、none等，插入数据库需要处理成空值
-            sqlSentence = sqlSentence.replace('nan','null').replace('None','null').replace('none','null') 
+            sqlSentence = sqlSentence.replace('nan','null').replace('None','null').replace('none','null')
             cursor.execute(sqlSentence)           
         except BaseException as e:
             print(e)        
-            continue
+            break
              
     conn.commit()
     cursor.close()
@@ -55,21 +57,27 @@ def getStockSYL(stockURL):
     print(len(jsonRes['data']['diff']))
     save2DB(jsonRes['data']['diff'])
     
-stock_info_url_syl = 'http://57.push2.eastmoney.com/api/qt/clist/get?cb=jQuery112407863401632324523_1569412177635&pn=1&pz=10000&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f3&fs=m:0+t:6,m:0+t:13,m:0+t:80,m:1+t:2,m:1+t:23&fields=f8,f9,f12,f14,f23,f114,f115&_=1569412177653'
+stock_info_url_syl = 'http://57.push2.eastmoney.com/api/qt/clist/get?cb=jQuery112407863401632324523_1569412177635&pn=1&pz=10000&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f3&fs=m:0+t:6,m:0+t:13,m:0+t:80,m:1+t:2,m:1+t:23&fields=f2,f8,f9,f12,f14,f20,f21,f23,f100,f102,f103,f114,f115&_=1569412177653'
 getStockSYL(stock_info_url_syl) 
 
 
 #http://57.push2.eastmoney.com/api/qt/clist/get?cb=jQuery112407863401632324523_1569412177635&pn=1&pz=10000&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f3&fs=m:0+t:6,m:0+t:13,m:0+t:80,m:1+t:2,m:1+t:23&fields=f8,f9,f12,f14,f23,f114,f115&_=1569412177653
 
 #全面的
-#http://57.push2.eastmoney.com/api/qt/clist/get?cb=jQuery112407863401632324523_1569412177635&pn=1&pz=1&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f3&fs=m:0+t:6,m:0+t:13,m:0+t:80,m:1+t:2,m:1+t:23&fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,f19,f20,f21,f22,f23,f24,f25,ff114,f115&_=1569412177653
+#http://57.push2.eastmoney.com/api/qt/clist/get?cb=jQuery112407863401632324523_1569412177635&pn=1&pz=1&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f3&fs=m:0+t:6,m:0+t:13,m:0+t:80,m:1+t:2,m:1+t:23&fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,f19,f20,f21,f22,f23,f24,f25,f26,f27,f28,f29,f30,f31,f32,f33,f34,f35,f36,f37,f38,f39,f40,f41,f42,f43,f44,f45,f46,f47,f48,f49,f50,f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61,f62,f63,f64,f65,f66,f67,f68,f69,f70,f71,f72,f73,f74,f75,f76,f77,f78,f79,f80,f81,f82,f83,f84,f85,f86,f87,f88,f89,f90,f91,f92,f93,f94,f95,f96,f97,f98,f99,f100,f101,f102,f103,f104,f105,f106,f107,f108,f109,f110,f111,f112,f113,f114,f115,f116,f117,f118,f119,f200&_=1569412177653
 
 #f8,f9,f12,f14,f23,f114,f115
+#f2:最新股价
 #f12:股票代码
 #f14:股票名称
 #f8:换手率
 #f9:动态市盈率
+#f20：总市值
+#f21:流通市值
 #f23:市净率
+#f100:行业
+#f102:省份
+#f103:概念
 #f114:静态市盈率
 #f115：滚动市盈率
         
