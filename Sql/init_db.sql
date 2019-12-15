@@ -18,12 +18,16 @@ CREATE TABLE `stock`  (
   `id` bigint(40) NOT NULL AUTO_INCREMENT,
   `stock_no` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `stock_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `create_time` timestamp(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `update_time` timestamp(0) NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP(0),
+  `pe_static` float(10, 2) DEFAULT NULL,
+  `pe_dynamic` float(10, 2) DEFAULT NULL,
+  `pe_rolling` float(10, 2) DEFAULT NULL,
+  `pb` float(10, 2) DEFAULT NULL,
+  `create_time` timestamp(0) DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp(0) DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP(0),
   `last_data_date` date DEFAULT NULL,
-  PRIMARY KEY (`id`, `stock_no`, `stock_name`, `create_time`, `update_time`) USING BTREE,
+  PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `stock_no`(`stock_no`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 76921 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 117805 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
