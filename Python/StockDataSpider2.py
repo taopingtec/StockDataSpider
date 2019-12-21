@@ -14,10 +14,10 @@ mysqlPort=3306
 mysqlUser='root'
 mysqlPassWord='abc@123'
 database='stock_data'
+dbConn = pymysql.connect(host=mysqlHost, port=mysqlPort, user=mysqlUser, passwd=mysqlPassWord, db=database, charset='utf8')     
 
 def saveStockList2Mysql(lst):
-    conn = pymysql.connect(host=mysqlHost, port=mysqlPort, user=mysqlUser, passwd=mysqlPassWord, db=database, charset='utf8') 
-    cursor = conn.cursor()
+    cursor = dbConn.cursor()
     insertSql = ('insert into stock(stock_no, stock_name) values(%s, %s)')
     
     for stock in lst:
@@ -26,27 +26,23 @@ def saveStockList2Mysql(lst):
         except:
             continue
     
-    conn.commit()
+    dbConn.commit()
     cursor.close()
-    conn.close()
     
 def createTableIfNeeded(code):    
-    conn = pymysql.connect(host=mysqlHost, port=mysqlPort, user=mysqlUser, passwd=mysqlPassWord, db=database, charset='utf8')
-    cursor = conn.cursor()
+    cursor = dbConn.cursor()
     createTableSql = "CREATE TABLE stock_date_%s LIKE stock_date;" % (code[-2:])
     #print(createTableSql)
     try:
         cursor.execute(createTableSql)
     except BaseException as e:
-        print(e)
-    conn.commit()
+        exp = e
+    dbConn.commit()
     cursor.close()
-    conn.close()
         
 def save2DB(filePath, code):
     createTableIfNeeded(code)
-    conn = pymysql.connect(host=mysqlHost, port=mysqlPort, user=mysqlUser, passwd=mysqlPassWord, db=database, charset='utf8') 
-    cursor = conn.cursor()
+    cursor = dbConn.cursor()
     data = pd.read_csv(filepath+code+'.csv', 'gbk')
     #print(data.columns)
     length = len(data)
@@ -83,9 +79,9 @@ def save2DB(filePath, code):
         print(e)        
              
             
-    conn.commit()
+    dbConn.commit()
     cursor.close()
-    conn.close()            
+ 
 
 #爬虫抓取网页函数
 def getHtml(url):
@@ -133,8 +129,7 @@ def getStockList(lst, stockURL):
     
 def getLastDataDate(code):
     lastDataDate = '16540504'
-    conn = pymysql.connect(host=mysqlHost, port=mysqlPort, user=mysqlUser, passwd=mysqlPassWord, db=database, charset='utf8') 
-    cursor = conn.cursor()
+    cursor = dbConn.cursor()
     try:
         sqlSentence = "SELECT last_data_date FROM stock WHERE stock_no=%s;" % (code)
         #获取的表中数据很乱，包含缺失值、Nnone、none等，插入数据库需要处理成空值
@@ -148,9 +143,8 @@ def getLastDataDate(code):
                     break
     except BaseException as e:
         print(e)        
-    conn.commit()
+    dbConn.commit()
     cursor.close()
-    conn.close()  
     return lastDataDate    
     
 def getStockDataAndSave(slist):
@@ -172,7 +166,31 @@ def getStockDataAndSave(slist):
             save2DB(filepath, code)    
         except BaseException as e:
             print(e)        
-    
+
+def getStockDataByCode(code):
+    startDate = getLastDataDate(code)        
+    preCode = '1'
+    if code[0]=='6':
+        preCode = '0'
+    url = 'http://quotes.money.163.com/service/chddata.html?code='+preCode+code+\
+        '&start=' + startDate +\
+        '&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP'
+        #print(url)
+    try:
+        urllib.request.urlretrieve(url, filepath+code+'.csv')   
+        save2DB(filepath, code)    
+    except BaseException as e:
+        print(e)        
+
+            
+def getStockDataAndSave():
+    sql = "select stock_no,stock_name from stock;"
+    df = pd.read_sql(sql, dbConn)
+    for index,row in df.iterrows():
+        #print(row['stock_no'])
+        getStockDataByCode(row['stock_no'])
+        print("Processing " + str(index) + " of " + str(df.shape[0]) + " :" + row['stock_no'] + row['stock_name'])
+            
 #Url = 'http://quote.eastmoney.com/stocklist.html'#东方财富网股票数据连接地址
 filepath = '.\\data\\'#定义数据文件保存路径
 #实施抓取
@@ -184,22 +202,20 @@ stock_info_url_sh = 'https://gupiao.baidu.com/stock/sh'
 stock_list_url_cyb = 'https://www.banban.cn/gupiao/list_cyb.html'
 stock_info_url_cyb = 'https://gupiao.baidu.com/stock/sz'
     
+
 #slist = [['000021', '深科技'],['000023', '深天地A']]
 slist = []
     
 getStockList(slist, stock_list_url_sz)
-#print(slist)
-getStockDataAndSave(slist)
-        
-print('========================================================')
 slist = []
 getStockList(slist, stock_list_url_sh)
-getStockDataAndSave(slist)
-   
-print('========================================================')
 slist = []
 getStockList(slist, stock_list_url_cyb)
-getStockDataAndSave(slist)
+#print(slist)
+
+getStockDataAndSave()
+    
+dbConn.close()    
 
 #print(code)
 #获取所有股票代码（以6开头的，应该是沪市数据）集合
