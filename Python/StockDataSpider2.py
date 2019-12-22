@@ -8,6 +8,7 @@ import pandas as pd
 import pymysql
 import os
 import datetime
+from datetime import date, timedelta
 
 mysqlHost='127.0.0.1'
 mysqlPort=3306
@@ -165,10 +166,28 @@ def getStockDataAndSave(slist):
             urllib.request.urlretrieve(url, filepath+code+'.csv')   
             save2DB(filepath, code)    
         except BaseException as e:
-            print(e)        
+            print(e)  
+
+def isNewestTradeDate(startDate):
+    weekday = date.today().isoweekday()
+    lastTradeDay = date.today().strftime("%Y%m%d")
+    if(7 == weekday):
+        lastTradeDay = (date.today() + timedelta(days = -2)).strftime("%Y%m%d")
+    if(6 == weekday):
+        lastTradeDay = (date.today() + timedelta(days = -1)).strftime("%Y%m%d")
+    
+    #print("date: " + startDate + ", lastTradeDay: " + lastTradeDay)
+    if(startDate == lastTradeDay):
+        #print("date == lastTradeDay")
+        return 1
+    return 0    
+            
 
 def getStockDataByCode(code):
-    startDate = getLastDataDate(code)        
+    startDate = getLastDataDate(code)   
+    if( 1 == isNewestTradeDate(startDate)):
+        return
+        
     preCode = '1'
     if code[0]=='6':
         preCode = '0'
@@ -189,7 +208,7 @@ def getStockDataAndSave():
     for index,row in df.iterrows():
         #print(row['stock_no'])
         getStockDataByCode(row['stock_no'])
-        print("Processing " + str(index) + " of " + str(df.shape[0]) + " :" + row['stock_no'] + row['stock_name'])
+        print("Processing " + str(index) + " of " + str(df.shape[0]) + " :" + row['stock_no'] + "   " + row['stock_name'])
             
 #Url = 'http://quote.eastmoney.com/stocklist.html'#东方财富网股票数据连接地址
 filepath = '.\\data\\'#定义数据文件保存路径
