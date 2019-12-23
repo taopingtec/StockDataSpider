@@ -75,3 +75,22 @@ CREATE TABLE `stock_date`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for stock_feihong
+-- ----------------------------
+DROP TABLE IF EXISTS `stock_fenhong`;
+CREATE TABLE `stock_fenhong`  (
+  `stock_no` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '股票代码',
+  `stock_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '股票名字',
+  `chuquan_date` date NOT NULL COMMENT '除权日',
+  `fangan` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '方案',
+  `guxilv` float(10, 2) NOT NULL COMMENT '股息率'
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+
+SET FOREIGN_KEY_CHECKS = 1;
