@@ -22,6 +22,7 @@ CREATE TABLE `stock`  (
   `pe_dynamic` float(10, 2) DEFAULT NULL COMMENT '动态市盈率',
   `pe_rolling` float(10, 2) DEFAULT NULL COMMENT '滚动市盈率',
   `pb` float(10, 2) DEFAULT NULL COMMENT '市净率',
+  `roe` float(10, 2) DEFAULT NULL COMMENT '加权净资产收益率',
   `price` float(10, 2) DEFAULT NULL COMMENT '最新股价',
   `turnover_rate` float(6, 2) DEFAULT NULL COMMENT '换手率',
   `total_value` bigint(255) DEFAULT NULL COMMENT '总市值',

@@ -20,15 +20,16 @@ def save2DB(stockDatas):
         record = stockDatas[i]
         try:
             sqlSentence = "update stock set pe_static=" + str(record['f114']) + ", pe_dynamic=" + str(record['f9']) + ", pe_rolling=" + str(record['f115']) \
-                          + ", pb=" + str(record['f23']) + ", price=" + str(record['f2']) + ", turnover_rate=" + str(record['f8']) + ", total_value=" + str(record['f20']) \
+                          + ", pb=" + str(record['f23'])+ ", roe=" + str(record['f37']) + ", price=" + str(record['f2']) + ", turnover_rate=" + str(record['f8']) + ", total_value=" + str(record['f20']) \
                           + ", circul_value=" + str(record['f21']) + ", prof='" + str(record['f100']) + "', province='" + str(record['f102']) \
                           + "', concept='" + str(record['f103']) + "' where stock_no=" + record['f12'] + ";"
 
             #获取的表中数据很乱，包含缺失值、Nnone、none等，插入数据库需要处理成空值
-            sqlSentence = sqlSentence.replace('nan','null').replace('None','null').replace('none','null')
+            sqlSentence = sqlSentence.replace('nan','null').replace('None','null').replace('none','null').replace('=-,', '=null,')
             cursor.execute(sqlSentence)           
         except BaseException as e:
-            print(e)        
+            print(e)    
+            print(sqlSentence)            
             break
              
     conn.commit()
@@ -57,7 +58,7 @@ def getStockSYL(stockURL):
     print(len(jsonRes['data']['diff']))
     save2DB(jsonRes['data']['diff'])
     
-stock_info_url_syl = 'http://57.push2.eastmoney.com/api/qt/clist/get?cb=jQuery112407863401632324523_1569412177635&pn=1&pz=10000&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f3&fs=m:0+t:6,m:0+t:13,m:0+t:80,m:1+t:2,m:1+t:23&fields=f2,f8,f9,f12,f14,f20,f21,f23,f100,f102,f103,f114,f115&_=1569412177653'
+stock_info_url_syl = 'http://57.push2.eastmoney.com/api/qt/clist/get?cb=jQuery112407863401632324523_1569412177635&pn=1&pz=10000&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f3&fs=m:0+t:6,m:0+t:13,m:0+t:80,m:1+t:2,m:1+t:23&fields=f2,f8,f9,f12,f14,f20,f21,f23,f37,f100,f102,f103,f114,f115&_=1569412177653'
 getStockSYL(stock_info_url_syl) 
 
 
@@ -75,6 +76,7 @@ getStockSYL(stock_info_url_syl)
 #f20：总市值
 #f21:流通市值
 #f23:市净率
+#f37:ROE
 #f100:行业
 #f102:省份
 #f103:概念
