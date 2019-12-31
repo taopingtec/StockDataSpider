@@ -35,7 +35,9 @@ class stockMinMax:
         self.maxValue = values.loc[0, 'JinShou']
         self.maxDate = values.loc[0, 'trade_date']
         
-        if(self.minDate > self.maxDate):
+        if(0 == self.minValue or 0 == self.maxValue):
+            self.incRatio = -111
+        elif(self.minDate > self.maxDate):
             self.incRatio = (self.minValue - self.maxValue) / self.maxValue * 100;
         else:
             self.incRatio = (self.maxValue - self.minValue) / self.minValue * 100;
@@ -52,6 +54,9 @@ def getMinMaxByCode(lst, code, start, end):
                +" and trade_date>" + start + " and trade_date<" + end + " order by JinShou desc;"
     df = pd.read_sql(tradeSql, dbConn)
     
+    if(df.empty):
+        return
+        
     #构造stockMinMax
     minMax = stockMinMax(df)
     
