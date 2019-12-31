@@ -97,9 +97,7 @@ def getAllStockMinMax(start, end):
         print("Has processed " + str(index) + " of " + str(df.shape[0]) + ", " + row['stock_no'] + ", " + row['stock_name'])
         #获取每只股票的最高最低，然后按比例高低排序
         stockMinMax = getMinMaxByCode(stockMinMaxList, row['stock_no'], start, end)
-        #break;
-        if(index > 10):
-            break
+        
         
     #按比例高低排序    
     stockMinMaxList.sort(key=incRatioCmp, reverse=True)       
