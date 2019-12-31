@@ -19,17 +19,15 @@ dbConn = pymysql.connect(host=mysqlHost, port=mysqlPort, user=mysqlUser, passwd=
 
 
 class stockMinMax:
-    stockNo = 'NA'
-    stockName = 'NA'
+    stockBasicInfo = {}
     minValue = 8888888;
     minDate = 16540504;
     maxValue = -8888888;
     maxDate = 16540504;
     incRatio = 0
     
-    def __init__(self, values):
-        self.stockNo = values.loc[values.shape[0] - 1, 'stock_no']
-        self.stockName = values.loc[values.shape[0] - 1, 'stock_name']
+    def __init__(self, values, stockInfo):
+        self.stockBasicInfo = stockInfo
         self.minValue = values.loc[values.shape[0] - 1, 'JinShou']
         self.minDate = values.loc[values.shape[0] - 1, 'trade_date']
         self.maxValue = values.loc[0, 'JinShou']
@@ -42,13 +40,14 @@ class stockMinMax:
         else:
             self.incRatio = (self.maxValue - self.minValue) / self.minValue * 100;
             
-        
+       
         #print("minDate: " + str(self.minDate) + ", minValue: " + str(self.minValue))
         #print("maxDate: " + str(self.maxDate) + ", maxValue: " + str(self.maxValue))
         #print("incRatio: " + str(self.incRatio) + ",  " + str('%.2f' % self.incRatio))
-
-
-def getMinMaxByCode(lst, code, start, end):
+        
+            
+def getMinMaxByCode(lst, stockInfo, start, end):
+    code = stockInfo['stock_no']
     #查出相关数据
     tradeSql = "select stock_no,stock_name,trade_date,JinShou from stock_date_" + code[-2:] + " where stock_no=" + code \
                +" and trade_date>" + start + " and trade_date<" + end + " order by JinShou desc;"
@@ -58,7 +57,7 @@ def getMinMaxByCode(lst, code, start, end):
         return
         
     #构造stockMinMax
-    minMax = stockMinMax(df)
+    minMax = stockMinMax(df, stockInfo)
     
     #放到lst
     lst.append(minMax)
@@ -78,30 +77,52 @@ def save2Excel(stockMinMaxList, excelFilePath):
     test.write(0,4,'最低日期')
     test.write(0,5,'最高')
     test.write(0,6,'最高日期')
+    test.write(0,7,'静态市盈率')
+    test.write(0,8,'动态市盈率')
+    test.write(0,9,'滚动市盈率')
+    test.write(0,10,'市净率')
+    test.write(0,11,'净资产收益率')
+    test.write(0,12,'换手率')
+    test.write(0,13,'总市值')
+    test.write(0,14,'流通市值')
+    test.write(0,15,'行业')
+    test.write(0,16,'省份')
+    
     
     rowNo = 1
     #第0行第1列写入字符串'this is a test'
     for stockMinMax in stockMinMaxList:
-        test.write(rowNo,0,stockMinMax.stockNo)
-        test.write(rowNo,1,stockMinMax.stockName)
+        test.write(rowNo,0,stockMinMax.stockBasicInfo['stock_no'])
+        test.write(rowNo,1,stockMinMax.stockBasicInfo['stock_name'])
         test.write(rowNo,2,str('%.2f' % stockMinMax.incRatio) + '%')
         test.write(rowNo,3,stockMinMax.minValue)
         test.write(rowNo,4,str(stockMinMax.minDate))
         test.write(rowNo,5,stockMinMax.maxValue)
         test.write(rowNo,6,str(stockMinMax.maxDate))
+        test.write(rowNo,7,stockMinMax.stockBasicInfo['pe_static'])
+        test.write(rowNo,8,stockMinMax.stockBasicInfo['pe_dynamic'])
+        test.write(rowNo,9,stockMinMax.stockBasicInfo['pe_rolling'])
+        test.write(rowNo,10,stockMinMax.stockBasicInfo['pb'])
+        test.write(rowNo,11,stockMinMax.stockBasicInfo['roe'])
+        test.write(rowNo,12,stockMinMax.stockBasicInfo['turnover_rate'])
+        test.write(rowNo,13,str(stockMinMax.stockBasicInfo['total_value']))
+        test.write(rowNo,14,str(stockMinMax.stockBasicInfo['circul_value']))
+        test.write(rowNo,15,stockMinMax.stockBasicInfo['prof'])
+        test.write(rowNo,16,stockMinMax.stockBasicInfo['province'])
+    
         rowNo += 1
     
     writebook.save(excelFilePath) 
     
             
 def getAllStockMinMax(start, end):
-    sql = "select stock_no,stock_name from stock;"
+    sql = "select * from stock;"
     df = pd.read_sql(sql, dbConn)
     stockMinMaxList = []
     for index,row in df.iterrows():
         print("Has processed " + str(index) + " of " + str(df.shape[0]) + ", " + row['stock_no'] + ", " + row['stock_name'])
         #获取每只股票的最高最低，然后按比例高低排序
-        stockMinMax = getMinMaxByCode(stockMinMaxList, row['stock_no'], start, end)
+        stockMinMax = getMinMaxByCode(stockMinMaxList, row, start, end)
         
         
     #按比例高低排序    
