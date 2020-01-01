@@ -24,7 +24,8 @@ class stockMinMax:
     minDate = 16540504;
     maxValue = -8888888;
     maxDate = 16540504;
-    incRatio = 0
+    incRatio = 0;
+    INVALID_INC_RATIO = -111;
     
     def __init__(self, values, stockInfo):
         self.stockBasicInfo = stockInfo
@@ -34,7 +35,7 @@ class stockMinMax:
         self.maxDate = values.loc[0, 'trade_date']
         
         if(0 == self.minValue or 0 == self.maxValue):
-            self.incRatio = -111
+            self.incRatio = self.INVALID_INC_RATIO
         elif(self.minDate > self.maxDate):
             self.incRatio = (self.minValue - self.maxValue) / self.maxValue * 100;
         else:
@@ -59,6 +60,9 @@ def getMinMaxByCode(lst, stockInfo, start, end):
     #构造stockMinMax
     minMax = stockMinMax(df, stockInfo)
     
+    if(minMax.incRatio == minMax.INVALID_INC_RATIO):
+        return
+    
     #放到lst
     lst.append(minMax)
     
@@ -73,19 +77,19 @@ def save2Excel(stockMinMaxList, excelFilePath):
     test.write(0,0,'股票代码')
     test.write(0,1,'股票名称')
     test.write(0,2,'涨幅')
-    test.write(0,3,'最低')
-    test.write(0,4,'最低日期')
-    test.write(0,5,'最高')
-    test.write(0,6,'最高日期')
-    test.write(0,7,'静态市盈率')
-    test.write(0,8,'动态市盈率')
-    test.write(0,9,'滚动市盈率')
-    test.write(0,10,'市净率')
-    test.write(0,11,'净资产收益率')
-    test.write(0,12,'换手率')
-    test.write(0,13,'总市值')
-    test.write(0,14,'流通市值')
-    test.write(0,15,'行业')
+    test.write(0,3,'净资产收益率')
+    test.write(0,4,'滚动市盈率')
+    test.write(0,5,'换手率')
+    test.write(0,6,'行业')
+    test.write(0,7,'最低')
+    test.write(0,8,'最低日期')
+    test.write(0,9,'最高')
+    test.write(0,10,'最高日期')
+    test.write(0,11,'静态市盈率')
+    test.write(0,12,'动态市盈率')
+    test.write(0,13,'市净率')
+    test.write(0,14,'总市值')
+    test.write(0,15,'流通市值')
     test.write(0,16,'省份')
     
     
@@ -95,19 +99,19 @@ def save2Excel(stockMinMaxList, excelFilePath):
         test.write(rowNo,0,stockMinMax.stockBasicInfo['stock_no'])
         test.write(rowNo,1,stockMinMax.stockBasicInfo['stock_name'])
         test.write(rowNo,2,str('%.2f' % stockMinMax.incRatio) + '%')
-        test.write(rowNo,3,stockMinMax.minValue)
-        test.write(rowNo,4,str(stockMinMax.minDate))
-        test.write(rowNo,5,stockMinMax.maxValue)
-        test.write(rowNo,6,str(stockMinMax.maxDate))
-        test.write(rowNo,7,stockMinMax.stockBasicInfo['pe_static'])
-        test.write(rowNo,8,stockMinMax.stockBasicInfo['pe_dynamic'])
-        test.write(rowNo,9,stockMinMax.stockBasicInfo['pe_rolling'])
-        test.write(rowNo,10,stockMinMax.stockBasicInfo['pb'])
-        test.write(rowNo,11,stockMinMax.stockBasicInfo['roe'])
-        test.write(rowNo,12,stockMinMax.stockBasicInfo['turnover_rate'])
-        test.write(rowNo,13,str(stockMinMax.stockBasicInfo['total_value']))
-        test.write(rowNo,14,str(stockMinMax.stockBasicInfo['circul_value']))
-        test.write(rowNo,15,stockMinMax.stockBasicInfo['prof'])
+        test.write(rowNo,3,stockMinMax.stockBasicInfo['roe'])    
+        test.write(rowNo,4,stockMinMax.stockBasicInfo['pe_rolling'])
+        test.write(rowNo,5,stockMinMax.stockBasicInfo['turnover_rate'])
+        test.write(rowNo,6,stockMinMax.stockBasicInfo['prof'])
+        test.write(rowNo,7,stockMinMax.minValue)
+        test.write(rowNo,8,str(stockMinMax.minDate))
+        test.write(rowNo,9,stockMinMax.maxValue)
+        test.write(rowNo,10,str(stockMinMax.maxDate))
+        test.write(rowNo,11,stockMinMax.stockBasicInfo['pe_static'])
+        test.write(rowNo,12,stockMinMax.stockBasicInfo['pe_dynamic'])
+        test.write(rowNo,13,stockMinMax.stockBasicInfo['pb'])
+        test.write(rowNo,14,str(stockMinMax.stockBasicInfo['total_value']))
+        test.write(rowNo,15,str(stockMinMax.stockBasicInfo['circul_value']))
         test.write(rowNo,16,stockMinMax.stockBasicInfo['province'])
     
         rowNo += 1
