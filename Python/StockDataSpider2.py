@@ -144,7 +144,6 @@ def getLastDataDate(code):
                     break
     except BaseException as e:
         print(e)        
-    dbConn.commit()
     cursor.close()
     return lastDataDate    
     
